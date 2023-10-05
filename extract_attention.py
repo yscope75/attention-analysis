@@ -45,12 +45,7 @@ def examples_in_batches(examples, batch_size):
 class AttnMapExtractor(object):
   """Runs BERT over examples to get its attention maps."""
 
-  def __init__(self, bert_version, init_checkpoint, debug=False):
-    make_placeholder = lambda name: tf.placeholder(
-        tf.int32, shape=[None, max_sequence_length], name=name)
-    self._input_ids = make_placeholder("input_ids")
-    self._segment_ids = make_placeholder("segment_ids")
-    self._input_mask = make_placeholder("input_mask")
+  def __init__(self, bert_version):
 
     # bert_config = modeling.BertConfig.from_json_file(bert_config_file)
     # if debug:
@@ -65,12 +60,6 @@ class AttnMapExtractor(object):
     #     input_mask=self._input_mask,
     #     token_type_ids=self._segment_ids,
     #     use_one_hot_embeddings=True).attn_maps
-
-    if not debug:
-      print("Loading BERT from checkpoint...")
-      assignment_map, _ = modeling.get_assignment_map_from_checkpoint(
-          tf.trainable_variables(), init_checkpoint)
-      tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
   def get_attn_maps(self, examples):
     
