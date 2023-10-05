@@ -15,7 +15,7 @@ def load_json(path):
 
 
 def write_json(o, path):
-  tf.io.gfile.MakeDirs(path.rsplit('/', 1)[0])
+  tf.io.gfile.makedirs(path.rsplit('/', 1)[0])
   with tf.io.gfile.GFile(path, 'w') as f:
     json.dump(o, f)
 
