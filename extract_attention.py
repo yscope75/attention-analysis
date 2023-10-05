@@ -4,9 +4,11 @@ import argparse
 import os
 import numpy as np
 import tensorflow as tf
+import torch 
 
 from bert import modeling
 from bert import tokenization
+from transformers import AutoTokenizer, AutoModel
 import bpe_utils
 import utils
 
@@ -43,25 +45,26 @@ def examples_in_batches(examples, batch_size):
 class AttnMapExtractor(object):
   """Runs BERT over examples to get its attention maps."""
 
-  def __init__(self, bert_config_file, init_checkpoint,
-               max_sequence_length=128, debug=False):
+  def __init__(self, bert_version, init_checkpoint, debug=False):
     make_placeholder = lambda name: tf.placeholder(
         tf.int32, shape=[None, max_sequence_length], name=name)
     self._input_ids = make_placeholder("input_ids")
     self._segment_ids = make_placeholder("segment_ids")
     self._input_mask = make_placeholder("input_mask")
 
-    bert_config = modeling.BertConfig.from_json_file(bert_config_file)
-    if debug:
-      bert_config.num_hidden_layers = 3
-      bert_config.hidden_size = 144
-    self._attn_maps = modeling.BertModel(
-        config=bert_config,
-        is_training=False,
-        input_ids=self._input_ids,
-        input_mask=self._input_mask,
-        token_type_ids=self._segment_ids,
-        use_one_hot_embeddings=True).attn_maps
+    # bert_config = modeling.BertConfig.from_json_file(bert_config_file)
+    # if debug:
+    #   bert_config.num_hidden_layers = 3
+    #   bert_config.hidden_size = 144
+    # load BERT model by version
+    self.bert_model = AutoModel.from_pretrained(bert_version)
+    # self._attn_maps = modeling.BertModel(
+    #     config=bert_config,
+    #     is_training=False,
+    #     input_ids=self._input_ids,
+    #     input_mask=self._input_mask,
+    #     token_type_ids=self._segment_ids,
+    #     use_one_hot_embeddings=True).attn_maps
 
     if not debug:
       print("Loading BERT from checkpoint...")
@@ -69,23 +72,37 @@ class AttnMapExtractor(object):
           tf.trainable_variables(), init_checkpoint)
       tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
-  def get_attn_maps(self, sess, examples):
-    feed = {
-        self._input_ids: np.vstack([e.input_ids for e in examples]),
-        self._segment_ids: np.vstack([e.segment_ids for e in examples]),
-        self._input_mask: np.vstack([e.input_mask for e in examples])
-    }
-    return sess.run(self._attn_maps, feed_dict=feed)
+  def get_attn_maps(self, examples):
+    
+    _input_ids = torch.from_numpy(np.vstack([e.input_ids for e in examples]))
+    _input_mask = torch.from_numpy(np.vstack([e.input_mask for e in examples]))
+    with torch.no_grad():
+      attn_maps = self.bert_model(
+        input_ids = _input_ids,
+        attention_mask = _input_mask,
+        output_attentions = True
+      )[-1]
+    
+    # feed = {
+    #     self._input_ids: np.vstack([e.input_ids for e in examples]),
+    #     self._segment_ids: np.vstack([e.segment_ids for e in examples]),
+    #     self._input_mask: np.vstack([e.input_mask for e in examples])
+    # }
+    return attn_maps
 
 
 def main():
+  # Set device 
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
       "--preprocessed-data-file", required=True,
       help="Location of preprocessed data (JSON file); see the README for "
            "expected data format.")
-  parser.add_argument("--bert-dir", required=True,
+  parser.add_argument("--bert-dir", required=False,
                       help="Location of the pre-trained BERT model.")
+  parser.add_argument("--bert-version", required=True,
+                      help="specify version of the pre-trained BERT model")
   parser.add_argument("--cased", default=False, action='store_true',
                       help="Don't lowercase the input.")
   parser.add_argument("--max_sequence_length", default=128, type=int,
@@ -100,9 +117,11 @@ def main():
   args = parser.parse_args()
 
   print("Creating examples...")
-  tokenizer = tokenization.FullTokenizer(
-      vocab_file=os.path.join(args.bert_dir, "vocab.txt"),
-      do_lower_case=not args.cased)
+  # tokenizer = tokenization.FullTokenizer(
+  #     vocab_file=os.path.join(args.bert_dir, "vocab.txt"),
+  #     do_lower_case=not args.cased)
+  # Change to use auto tokenizer
+  tokenizer = AutoTokenizer.from_pretrained(args.bert_version)
   examples = []
   for features in utils.load_json(args.preprocessed_data_file):
     example = Example(features, tokenizer, args.max_sequence_length)
@@ -110,11 +129,7 @@ def main():
       examples.append(example)
 
   print("Building BERT model...")
-  extractor = AttnMapExtractor(
-      os.path.join(args.bert_dir, "bert_config.json"),
-      os.path.join(args.bert_dir, "bert_model.ckpt"),
-      args.max_sequence_length, args.debug
-  )
+  extractor = AttnMapExtractor(args.bert_version)
 
   print("Extracting attention maps...")
   feature_dicts_with_attn = []
