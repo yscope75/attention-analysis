@@ -133,15 +133,13 @@ def main():
 
   print("Extracting attention maps...")
   feature_dicts_with_attn = []
-  with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    for batch_of_examples in examples_in_batches(examples, args.batch_size):
-      attns = extractor.get_attn_maps(sess, batch_of_examples)
-      for e, e_attn in zip(batch_of_examples, attns):
-        seq_len = len(e.tokens)
-        e.features["attns"] = e_attn[:, :, :seq_len, :seq_len].astype("float16")
-        e.features["tokens"] = e.tokens
-        feature_dicts_with_attn.append(e.features)
+  for batch_of_examples in examples_in_batches(examples, args.batch_size):
+    attns = extractor.get_attn_maps(batch_of_examples)
+    for e, e_attn in zip(batch_of_examples, attns):
+      seq_len = len(e.tokens)
+      e.features["attns"] = e_attn[:, :, :seq_len, :seq_len].astype("float16")
+      e.features["tokens"] = e.tokens
+      feature_dicts_with_attn.append(e.features)
 
   if args.word_level:
     print("Converting to word-level attention...")
