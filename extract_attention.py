@@ -96,12 +96,12 @@ def main():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
-      "--preprocessed-data-file", required=True,
+      "--preprocessed_data_file", required=True,
       help="Location of preprocessed data (JSON file); see the README for "
            "expected data format.")
   parser.add_argument("--bert-dir", required=False,
                       help="Location of the pre-trained BERT model.")
-  parser.add_argument("--bert-version", required=True,
+  parser.add_argument("--bert_version", required=True,
                       help="specify version of the pre-trained BERT model")
   parser.add_argument("--cased", default=False, action='store_true',
                       help="Don't lowercase the input.")
