@@ -3,7 +3,7 @@
 import argparse
 import os
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 import torch 
 
 from bert import modeling
