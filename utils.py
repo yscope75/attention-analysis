@@ -10,25 +10,25 @@ import tensorflow as tf
 
 
 def load_json(path):
-  with tf.gfile.GFile(path, 'r') as f:
+  with tf.io.gfile.GFile(path, 'r') as f:
     return json.load(f)
 
 
 def write_json(o, path):
-  tf.gfile.MakeDirs(path.rsplit('/', 1)[0])
-  with tf.gfile.GFile(path, 'w') as f:
+  tf.io.gfile.MakeDirs(path.rsplit('/', 1)[0])
+  with tf.io.gfile.GFile(path, 'w') as f:
     json.dump(o, f)
 
 
 def load_pickle(path):
-  with tf.gfile.GFile(path, 'rb') as f:
+  with tf.io.gfile.GFile(path, 'rb') as f:
     return pickle.load(f)
 
 
 def write_pickle(o, path):
   if '/' in path:
-    tf.gfile.MakeDirs(path.rsplit('/', 1)[0])
-  with tf.gfile.GFile(path, 'wb') as f:
+    tf.io.gfile.MakeDirs(path.rsplit('/', 1)[0])
+  with tf.io.gfile.GFile(path, 'wb') as f:
     pickle.dump(o, f, -1)
 
 
