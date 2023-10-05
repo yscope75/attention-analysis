@@ -125,7 +125,7 @@ def main():
   for batch_of_examples in examples_in_batches(examples, args.batch_size):
     attns = extractor.get_attn_maps(batch_of_examples)
     # convert to numpy tensor 
-    attns = torch.cat(list(attns)).numpy()
+    attns = torch.stack(list(attns), dim=1).numpy()
     for e, e_attn in zip(batch_of_examples, attns):
       seq_len = len(e.tokens)
       e.features["attns"] = e_attn[:, :, :seq_len, :seq_len].astype("float16")
