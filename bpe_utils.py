@@ -47,19 +47,19 @@ def tokenize_and_align(tokenizer, words, cased):
   lists where each sub-list contains BERT-tokenized tokens for the
   correponding word."""
 
-  words = ["[CLS]"] + words + ["[SEP]"]
+  words = ["<s>"] + words + ["</s>"]
   # basic_tokenizer = tokenizer.basic_tokenizer
   tokenized_words = []
   for word in words:
     word = tokenization.convert_to_unicode(word)
     # word = basic_tokenizer._clean_text(word)
-    if word == "[CLS]" or word == "[SEP]":
+    if word == "<s>" or word == "</s>":
       word_toks = [word]
     else:
       if not cased:
         word = word.lower()
         # word = basic_tokenizer._run_strip_accents(word)
-      word_toks = _run_split_on_punc(word)
+      word_toks = [word]
 
     tokenized_word = []
     for word_tok in word_toks:

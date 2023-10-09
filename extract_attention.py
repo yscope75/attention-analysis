@@ -26,7 +26,7 @@ class Example(object):
         text = features["text"]
       else:
         text = " ".join(features["words"])
-      self.tokens = ["[CLS]"] + tokenizer.tokenize(text) + ["[SEP]"]
+      self.tokens = ["<s>"] + tokenizer.tokenize(text) + ["</s>"]
 
     self.input_ids = tokenizer.convert_tokens_to_ids(self.tokens)
     self.segment_ids = [0] * len(self.tokens)
