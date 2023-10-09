@@ -56,8 +56,8 @@ def tokenize_and_align(tokenizer, words, cased):
     if word == "<s>" or word == "</s>":
       word_toks = [word]
     else:
-      if not cased:
-        word = word.lower()
+      # if not cased:
+      #   word = word.lower()
         # word = basic_tokenizer._run_strip_accents(word)
       word_toks = [word]
 
