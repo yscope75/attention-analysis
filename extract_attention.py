@@ -12,6 +12,7 @@ from transformers import AutoTokenizer, AutoModel
 import bpe_utils
 import utils
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Example(object):
   """Represents a single input sequence to be passed into BERT."""
@@ -52,7 +53,7 @@ class AttnMapExtractor(object):
     #   bert_config.num_hidden_layers = 3
     #   bert_config.hidden_size = 144
     # load BERT model by version
-    self.bert_model = AutoModel.from_pretrained(bert_version)
+    self.bert_model = AutoModel.from_pretrained(bert_version).to(device)
     # self._attn_maps = modeling.BertModel(
     #     config=bert_config,
     #     is_training=False,
@@ -63,8 +64,8 @@ class AttnMapExtractor(object):
 
   def get_attn_maps(self, examples):
     
-    _input_ids = torch.from_numpy(np.vstack([e.input_ids for e in examples]))
-    _input_mask = torch.from_numpy(np.vstack([e.input_mask for e in examples]))
+    _input_ids = torch.from_numpy(np.vstack([e.input_ids for e in examples])).to(device)
+    _input_mask = torch.from_numpy(np.vstack([e.input_mask for e in examples])).to(device)
     with torch.no_grad():
       attn_maps = self.bert_model(
         input_ids = _input_ids,
@@ -125,7 +126,7 @@ def main():
   for batch_of_examples in examples_in_batches(examples, args.batch_size):
     attns = extractor.get_attn_maps(batch_of_examples)
     # convert to numpy tensor 
-    attns = torch.stack(list(attns), dim=1).numpy()
+    attns = torch.stack(list(attns), dim=1).cpu().numpy()
     for e, e_attn in zip(batch_of_examples, attns):
       seq_len = len(e.tokens)
       e.features["attns"] = e_attn[:, :, :seq_len, :seq_len].astype("float16")
