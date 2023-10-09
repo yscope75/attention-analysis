@@ -20,7 +20,7 @@ def _is_punctuation(char):
         return True
     return False
 
-def _run_split_on_punc(self, text, never_split=None):
+def _run_split_on_punc(text, never_split=None):
   """Splits punctuation on a piece of text."""
   if never_split is not None and text in never_split:
       return [text]
