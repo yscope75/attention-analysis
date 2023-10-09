@@ -98,7 +98,7 @@ def main():
   parser.add_argument("--max_sequence_length", default=256, type=int,
                       help="Maximum input sequence length after tokenization "
                            "(default=128).")
-  parser.add_argument("--batch_size", default=128, type=int,
+  parser.add_argument("--batch_size", default=64, type=int,
                       help="Batch size when running BERT (default=16).")
   parser.add_argument("--debug", default=False, action='store_true',
                       help="Use tiny model for fast debugging.")
