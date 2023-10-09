@@ -63,7 +63,7 @@ def tokenize_and_align(tokenizer, words, cased):
 
     tokenized_word = []
     for word_tok in word_toks:
-      tokenized_word += tokenizer.wordpiece_tokenizer.tokenize(word_tok)
+      tokenized_word += tokenizer.tokenize(word_tok)
     tokenized_words.append(tokenized_word)
 
   i = 0
