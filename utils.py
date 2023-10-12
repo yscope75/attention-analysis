@@ -28,7 +28,7 @@ def load_pickle(path):
 def write_pickle(o, path):
   if '/' in path:
     tf.io.gfile.makedirs(path.rsplit('/', 1)[0])
-  with tf.io.gfile.GFile(path, 'wb') as f:
+  with open(path, 'wb') as f:
     pickle.dump(o, f, -1)
 
 
